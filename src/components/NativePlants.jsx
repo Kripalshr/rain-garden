@@ -36,12 +36,12 @@ const NativePlants = () => {
     >
       {/* Title */}
       <motion.div
-        className="flex-none text-center pt-10"
+        className="flex-none text-center "
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
       >
-        <h2 className="text-4xl font-bold">Native Plants</h2>
+        <h2 className="text-4xl font-bold py-10">Native Plants</h2>
       </motion.div>
 
       {/* Grid Container */}
