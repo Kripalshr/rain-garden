@@ -6,7 +6,7 @@ import poppy from "../assets/r1.jpeg";
 import bamboo from "../assets/r2.jpg";
 import indian from "../assets/r9.jpg";
 import marigold from "../assets/r10.jpg";
-import susans from "../assets/rp2.jpg";
+import susans from "../assets/rba.png";
 
 const plants = [
   { name: "Nepalese Lantant", image: Lantant },
