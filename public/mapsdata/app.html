@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>KTM Suitability Map</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/leaflet-measure@3.1.0/dist/leaflet-measure.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f0f2f5;
+      }
+
+      #map {
+        height: 92vh;
+        width: 100%;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        text-align: center;
+        margin: 10px;
+        color: white;
+        font-family: Arial, sans-serif;
+        font-size: 24px;
+        padding: 12px;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+      }
+
+      #municipality-select {
+        width: 300px;
+        padding: 5px;
+        font-size: 14px;
+      }
+
+      .select2-container {
+        width: 300px !important;
+        margin-right: 10px;
+      }
+
+      .select2-selection--multiple {
+        min-height: 38px !important;
+        border-radius: 5px !important;
+      }
+
+      .legend {
+        padding: 6px 8px;
+        background: white;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        border-radius: 4px;
+        line-height: 18px;
+        color: #2c3e50;
+        font-family: Arial, sans-serif;
+        min-width: 160px;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        margin-bottom: 50px;
+        position: relative;
+        top: -50px;
+      }
+
+      .legend h4 {
+        margin: 0 0 3px 0;
+        font-size: 13px;
+        font-weight: bold;
+        text-align: center;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 3px;
+        margin-bottom: 5px;
+      }
+
+      .legend i {
+        width: 16px;
+        height: 16px;
+        float: left;
+        margin-right: 6px;
+        opacity: 1;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 3px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #000;
+        white-space: nowrap;
+      }
+
+      .map-controls {
+        margin: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-left: 20px;
+      }
+
+      .map-controls button {
+        padding: 8px 15px;
+        margin-right: 10px;
+        height: 38px;
+        background-color: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+      }
+
+      .map-controls button:hover {
+        background-color: #34495e;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Kathmandu Valley Suitability Map</h1>
+
+    <div class="map-controls">
+      <select id="municipality-select" multiple>
+        <option value="Budhanilakantha">Budhanilakantha</option>
+        <option value="Chandragiri">Chandragiri</option>
+        <option value="Dakshinkali">Dakshinkali</option>
+        <option value="Gokarneshwor">Gokarneshwor</option>
+        <option value="Kageshwori Manahora">Kageshwori Manahora</option>
+        <option value="Kathmandu">Kathmandu</option>
+        <option value="Kirtipur">Kirtipur</option>
+        <option value="Nagarjun">Nagarjun</option>
+        <option value="Shankharapur">Shankharapur</option>
+        <option value="Tarakeshwor">Tarakeshwor</option>
+        <option value="Tokha">Tokha</option>
+      </select>
+      <button onclick="clearSelection()">Clear Selection</button>
+      <button onclick="toggleSatellite()">Toggle Satellite</button>
+      <button onclick="toggleGoogleMaps()">Toggle Google Maps</button>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/georaster"></script>
+    <script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
+    <script src="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-measure@3.1.0/dist/leaflet-measure.min.js"></script>
+
+    <script>
+      $(document).ready(function () {
+        $("#municipality-select").select2({
+          placeholder: "Select Municipality",
+          allowClear: true,
+          multiple: true,
+        });
+      });
+
+      const map = L.map("map").setView([27.7172, 85.324], 11);
+      let suitabilityLayer = null;
+      let boundaryLayers = {};
+
+      const osm = L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          attribution: "© OpenStreetMap",
+        }
+      ).addTo(map);
+
+      const satellite = L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "Imagery © Esri",
+        }
+      );
+
+      const googleMaps = L.tileLayer(
+        "http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+        {
+          maxZoom: 20,
+          subdomains: ["mt0", "mt1", "mt2", "mt3"],
+        }
+      );
+
+      fetch("suitability_ktm.tif")
+        .then((response) => response.arrayBuffer())
+        .then((arrayBuffer) => {
+          parseGeoraster(arrayBuffer).then((georaster) => {
+            suitabilityLayer = new GeoRasterLayer({
+              georaster: georaster,
+              opacity: 0.7,
+              resolution: 256,
+            }).addTo(map);
+          });
+        })
+        .catch((error) => {
+          console.error("Error loading suitability map:", error);
+        });
+
+      L.control
+        .polylineMeasure({
+          position: "topleft",
+          showBearings: true,
+          clearMeasurementsOnStop: false,
+          showClearControl: true,
+          showUnitControl: true,
+        })
+        .addTo(map);
+
+      const measureControl = new L.Control.Measure({
+        primaryLengthUnit: "meters",
+        primaryAreaUnit: "sqmeters",
+        activeColor: "#ABE67E",
+        completedColor: "#C8F2BE",
+      });
+      measureControl.addTo(map);
+
+      const legend = L.control({ position: "bottomright" });
+      legend.onAdd = function (map) {
+        const div = L.DomUtil.create("div", "legend");
+        div.innerHTML = `
+                <h4>Legend</h4>
+                <div class="legend-item">
+                    <i style="background: #008000"></i>Highly Suitable Area
+                </div>
+                <div class="legend-item">
+                    <i style="background: #FFFF00"></i>Moderately Suitable Area
+                </div>
+                <div class="legend-item">
+                    <i style="background: #FF0000"></i>Low Suitable Area
+                </div>
+            `;
+        return div;
+      };
+      legend.addTo(map);
+
+      let satelliteVisible = false;
+      let googleMapsVisible = false;
+
+      function clearSelection() {
+        $("#municipality-select").val(null).trigger("change");
+        Object.values(boundaryLayers).forEach((layer) => {
+          map.removeLayer(layer);
+        });
+        boundaryLayers = {};
+      }
+
+      function toggleSatellite() {
+        if (googleMapsVisible) {
+          map.removeLayer(googleMaps);
+          googleMapsVisible = false;
+        }
+
+        if (satelliteVisible) {
+          map.removeLayer(satellite);
+          map.addLayer(osm);
+        } else {
+          map.removeLayer(osm);
+          map.addLayer(satellite);
+        }
+        if (suitabilityLayer) {
+          suitabilityLayer.bringToFront();
+        }
+        satelliteVisible = !satelliteVisible;
+      }
+
+      function toggleGoogleMaps() {
+        if (satelliteVisible) {
+          map.removeLayer(satellite);
+          satelliteVisible = false;
+        }
+
+        if (googleMapsVisible) {
+          map.removeLayer(googleMaps);
+          map.addLayer(osm);
+        } else {
+          map.removeLayer(osm);
+          map.addLayer(googleMaps);
+        }
+        if (suitabilityLayer) {
+          suitabilityLayer.bringToFront();
+        }
+        googleMapsVisible = !googleMapsVisible;
+      }
+
+      $("#municipality-select").on("change", async function (e) {
+        const selectedOptions = $(this).val() || [];
+
+        // Remove unselected municipalities
+        Object.keys(boundaryLayers).forEach((muni) => {
+          if (!selectedOptions.includes(muni)) {
+            map.removeLayer(boundaryLayers[muni]);
+            delete boundaryLayers[muni];
+          }
+        });
+
+        // Add new selections
+        for (const municipality of selectedOptions) {
+          if (!boundaryLayers[municipality]) {
+            try {
+              const response = await fetch(`${municipality}.geojson`);
+              const data = await response.json();
+
+              boundaryLayers[municipality] = L.geoJSON(data, {
+                style: {
+                  color: "#000000",
+                  weight: 4,
+                  fillOpacity: 0.1,
+                  fillColor: "#000000",
+                  dashArray: "",
+                  lineCap: "round",
+                  lineJoin: "round",
+                },
+              }).addTo(map);
+
+              if (Object.keys(boundaryLayers).length > 0) {
+                const bounds = L.featureGroup(
+                  Object.values(boundaryLayers)
+                ).getBounds();
+                map.fitBounds(bounds);
+              }
+
+              if (suitabilityLayer) {
+                suitabilityLayer.bringToFront();
+              }
+            } catch (error) {
+              console.error(`Error processing ${municipality}:`, error);
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
