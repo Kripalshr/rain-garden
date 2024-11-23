@@ -40,15 +40,17 @@ const Navbar = () => {
 
   return (
     <div
-      className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 ${
+      className={`fixed top-0 left-0 w-full z-50 transition-transform duration-300 overflow-hidden ${
         isVisible
           ? "translate-y-0 bg-white text-black shadow-md" // Default: white background and black text
           : "-translate-y-full" // Navbar is hidden
       }`}
     >
-      <div className="container mx-auto p-4 flex items-center justify-between">
+      <div className="container mx-auto p-8 flex items-center justify-between">
         {/* Logo */}
-        <h1 className="text-xl font-bold cursor-pointer">Rain Garden</h1>
+        <h1 className="text-2xl font-bold cursor-pointer ">
+          Rain<span className="text-green-300">Garden</span>
+        </h1>
 
         {/* Hamburger Menu Icon (visible on mobile) */}
         <button
@@ -82,7 +84,7 @@ const Navbar = () => {
             </li>
             <li>
               <a href="#guides" className="hover:text-gray-600">
-                Guides
+                Methodology
               </a>
             </li>
             <li>
@@ -91,8 +93,8 @@ const Navbar = () => {
               </a>
             </li>
             <li>
-              <a href="#stories" className="hover:text-gray-600">
-                Stories
+              <a href="#case" className="hover:text-gray-600">
+                Case Studies
               </a>
             </li>
           </ul>
@@ -144,11 +146,11 @@ const Navbar = () => {
           </li>
           <li>
             <a
-              href="#contact"
+              href="#case"
               className="hover:text-gray-600"
               onClick={() => setIsMenuOpen(false)}
             >
-              Contact
+              Case Studies
             </a>
           </li>
         </ul>

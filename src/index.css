@@ -4,6 +4,12 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  max-width: 100vw !important;
+  /* overflow-x: hidden; */
 }
 
 .map {

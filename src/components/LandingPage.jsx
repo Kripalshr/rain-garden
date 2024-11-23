@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import garden from "../assets/image.png";
+import raingarden from "../assets/raingarden.png";
 
 const Landingpage = () => {
   // Intersection Observer for scroll-triggered animations
@@ -44,7 +45,7 @@ const Landingpage = () => {
               whileHover={{ scale: 1.1 }}
               className="px-6 py-3 bg-transparent border border-black text-black font-medium hover:bg-gray-100 transition"
             >
-              Explore success stories
+              <a href="#photos"> Explore Photos</a>
             </motion.button>
           </div>
         </motion.div>
