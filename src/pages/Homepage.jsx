@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import CaseStudies from "../components/CaseStudies";
-import Conclusion from "../components/conclusion";
+import Conclusion from "../components/ConclusionPage";
 import Guides from "../components/Guides";
 import Landingpage from "../components/LandingPage";
 import Maps from "../components/Maps";
