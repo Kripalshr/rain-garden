@@ -50,20 +50,20 @@ const Maps = () => {
         {/* Disabled Iframe */}
         <iframe
           src="/mapsdata/app.html" // Path to your index.html file
-          className="w-full h-[80vh] rounded-md border border-gray-300 shadow-md pointer-events-none"
+          className="w-full h-[80vh] rounded-md border border-gray-300 shadow-md"
           title="Kathmandu Valley Map"
         ></iframe>
 
         {/* Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          {/* Centered Button */}
-          <button
+        {/* <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center"> */}
+        {/* Centered Button */}
+        {/* <button
             onClick={handleButtonClick}
             className="bg-white text-black font-bold py-3 px-6 rounded-md shadow-md hover:bg-gray-200 transition"
           >
             View Kathmandu Valley Suitability Map
-          </button>
-        </div>
+          </button> */}
+        {/* </div> */}
       </motion.div>
     </motion.div>
   );
